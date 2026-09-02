@@ -1,0 +1,219 @@
+-- phpMyAdmin SQL Dump
+-- Versión optimizada y corregida para relaciones (mokpo bites)
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: `mokpo bites`
+--
+DROP DATABASE IF EXISTS `mokpo bites`;
+CREATE DATABASE `mokpo bites` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `mokpo bites`;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `clientes`
+--
+
+CREATE TABLE `clientes` (
+  `id_cliente` INT(11) NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100) NOT NULL,
+  `telefono` VARCHAR(20) NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `fecha_registro` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  PRIMARY KEY (`id_cliente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `empleados`
+--
+
+CREATE TABLE `empleados` (
+  `id_empleado` INT(11) NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100) NOT NULL,
+  `rol` VARCHAR(50) NOT NULL,
+  `turno` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id_empleado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `proveedor`
+--
+
+CREATE TABLE `proveedor` (
+  `id_proveedor` INT(11) NOT NULL AUTO_INCREMENT,
+  `nombre_empresa` VARCHAR(100) NOT NULL,
+  `contacto` VARCHAR(100) NOT NULL,
+  `telefono` VARCHAR(20) NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `direccion` VARCHAR(200) NOT NULL,
+  PRIMARY KEY (`id_proveedor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `compras_inventario`
+--
+
+CREATE TABLE `compras_inventario` (
+  `id_compra` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_proveedor` INT(11) NOT NULL,
+  `id_empleado` INT(11) NOT NULL,
+  `fecha_compra` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  `total_compra` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id_compra`),
+  KEY `fk_compra_proveedor` (`id_proveedor`),
+  KEY `fk_compra_empleado` (`id_empleado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ingredientes`
+--
+
+CREATE TABLE `ingredientes` (
+  `id_ingrediente` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_proveedor` INT(11) NOT NULL,
+  `nombre` VARCHAR(100) NOT NULL, -- Corregido de INT a VARCHAR
+  `unidad_medida` VARCHAR(20) NOT NULL,
+  `stock_actual` DECIMAL(10,2) NOT NULL,
+  `stock_minimo` DECIMAL(10,2) NOT NULL,
+  `costo_unitario` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id_ingrediente`),
+  KEY `fk_ingrediente_proveedor` (`id_proveedor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `detalle_compras`
+--
+
+CREATE TABLE `detalle_compras` (
+  `id_detalle_compra` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_compra` INT(11) NOT NULL,
+  `id_ingrediente` INT(11) NOT NULL,
+  `cantidad_comprada` DECIMAL(10,2) NOT NULL,
+  `preio_unitario` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id_detalle_compra`),
+  KEY `fk_detalle_compra` (`id_compra`),
+  KEY `fk_detalle_ingrediente` (`id_ingrediente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `pedidos`
+--
+
+CREATE TABLE `pedidos` (
+  `id_pedido` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_cliente` INT(11) NOT NULL,
+  `id_empleado` INT(11) NOT NULL,
+  `fecha_hora` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
+  `metodo_pago` VARCHAR(30) NOT NULL,
+  `estado` VARCHAR(30) NOT NULL,
+  `total` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id_pedido`),
+  KEY `fk_pedido_cliente` (`id_cliente`),
+  KEY `fk_pedido_empleado` (`id_empleado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `productos`
+--
+
+CREATE TABLE `productos` (
+  `id_producto` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_categoria` INT(11) NOT NULL,
+  `nombre` VARCHAR(100) NOT NULL,
+  `descripcion` TEXT NOT NULL,
+  `precio` DECIMAL(10,2) NOT NULL,
+  `disponible` TINYINT(1) NOT NULL,
+  PRIMARY KEY (`id_producto`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `detalle_pedidos`
+--
+
+CREATE TABLE `detalle_pedidos` (
+  `id_detalle` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_pedido` INT(11) NOT NULL, -- Añadido para vincular lógicamente al pedido
+  `id_producto` INT(11) NOT NULL,
+  `cantidad` INT(11) NOT NULL,
+  `precio_unitario` DECIMAL(10,2) NOT NULL,
+  `notas_adicionales` VARCHAR(150) NOT NULL,
+  PRIMARY KEY (`id_detalle`),
+  KEY `fk_detalle_pedido_gen` (`id_pedido`),
+  KEY `fk_detalle_producto` (`id_producto`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `recetas`
+--
+
+CREATE TABLE `recetas` (
+  `id_receta` INT(11) NOT NULL AUTO_INCREMENT,
+  `id_producto` INT(11) NOT NULL,
+  `id_ingrediente` INT(11) NOT NULL,
+  `cantidad_requerida` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id_receta`),
+  KEY `fk_receta_producto` (`id_producto`),
+  KEY `fk_receta_ingrediente` (`id_ingrediente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- RESTRICCIONES / LLAVES FORÁNEAS (FOREIGN KEYS)
+--
+
+ALTER TABLE `compras_inventario`
+  ADD CONSTRAINT `fk_compra_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_compra_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `ingredientes`
+  ADD CONSTRAINT `fk_ingrediente_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `detalle_compras`
+  ADD CONSTRAINT `fk_detalle_compra` FOREIGN KEY (`id_compra`) REFERENCES `compras_inventario` (`id_compra`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_detalle_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `pedidos`
+  ADD CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pedido_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `detalle_pedidos`
+  ADD CONSTRAINT `fk_detalle_pedido_gen` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_detalle_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `recetas`
+  ADD CONSTRAINT `fk_receta_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_receta_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
