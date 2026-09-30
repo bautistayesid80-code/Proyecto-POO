@@ -266,7 +266,76 @@ CREATE TABLE `pedidos` (
   `estado` varchar(30) NOT NULL,
   `total` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- ========================================================
+-- CREACIÓN DE LA TABLA `facturas`
+-- ========================================================
 
+CREATE TABLE `facturas` (
+  `id_factura` int(11) NOT NULL AUTO_INCREMENT,
+  `numero_factura` varchar(30) NOT NULL,
+  `id_pedido` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_empleado` int(11) NOT NULL,
+  `fecha_emision` timestamp NOT NULL DEFAULT current_timestamp(),
+  `subtotal` decimal(10,2) NOT NULL,
+  `impuestos` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(10,2) NOT NULL,
+  `metodo_pago` varchar(30) NOT NULL,
+  `estado_factura` enum('emitida','anulada','reembolsada') NOT NULL DEFAULT 'emitida',
+  PRIMARY KEY (`id_factura`),
+  UNIQUE KEY `uk_numero_factura` (`numero_factura`),
+  UNIQUE KEY `uk_factura_pedido` (`id_pedido`),
+  KEY `fk_factura_cliente` (`id_cliente`),
+  KEY `fk_factura_empleado` (`id_empleado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ========================================================
+-- CREACIÓN DE LA TABLA `devoluciones`
+-- ========================================================
+
+CREATE TABLE `devoluciones` (
+  `id_devolucion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_factura` int(11) NOT NULL,
+  `id_detalle_pedido` int(11) DEFAULT NULL,
+  `id_empleado` int(11) NOT NULL,
+  `tipo_devolucion` enum('total','parcial') NOT NULL DEFAULT 'parcial',
+  `cantidad_devuelta` int(11) NOT NULL DEFAULT 1,
+  `monto_devuelto` decimal(10,2) NOT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `fecha_devolucion` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_devolucion`),
+  KEY `fk_devolucion_factura` (`id_factura`),
+  KEY `fk_devolucion_detalle` (`id_detalle_pedido`),
+  KEY `fk_devolucion_empleado` (`id_empleado`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ========================================================
+-- RESTRICCIONES DE CLAVE FORÁNEA (CONEXIONES)
+-- ========================================================
+
+-- Conexiones para `facturas`
+ALTER TABLE `facturas`
+  ADD CONSTRAINT `fk_factura_pedido` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_factura_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_factura_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Conexiones para `devoluciones`
+ALTER TABLE `devoluciones`
+  ADD CONSTRAINT `fk_devolucion_factura` FOREIGN KEY (`id_factura`) REFERENCES `facturas` (`id_factura`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_devolucion_detalle` FOREIGN KEY (`id_detalle_pedido`) REFERENCES `detalle_pedidos` (`id_detalle`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_devolucion_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ========================================================
+-- VOLCADO DE DATOS (REGISTROS DE PRUEBA)
+-- ========================================================
+
+-- Registro de factura asociada al pedido #1 existente
+INSERT INTO `facturas` (`id_factura`, `numero_factura`, `id_pedido`, `id_cliente`, `id_empleado`, `fecha_emision`, `subtotal`, `impuestos`, `total`, `metodo_pago`, `estado_factura`) VALUES
+(1, 'FACT-2026-0001', 1, 1, 1, '2026-09-02 19:25:35', 37815.13, 7184.87, 45000.00, 'nequi', 'emitida');
+
+-- Registro de devolución parcial (por ejemplo, el detalle #2 del pedido: Pollo frito)
+INSERT INTO `devoluciones` (`id_devolucion`, `id_factura`, `id_detalle_pedido`, `id_empleado`, `tipo_devolucion`, `cantidad_devuelta`, `monto_devuelto`, `motivo`, `fecha_devolucion`) VALUES
+(1, 1, 2, 1, 'parcial', 1, 20000.00, 'Cliente solicitó cancelación del plato por demora en entrega', '2026-09-02 19:40:10');
 --
 -- Volcado de datos para la tabla `pedidos`
 --
