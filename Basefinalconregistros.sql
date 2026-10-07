@@ -1,273 +1,217 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Servidor: localhost:3307
--- Tiempo de generación: 16-09-2026 a las 15:32:10
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
---
--- Base de datos: `mokpo_bites`
---
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `clientes`
---
+-- ========================================================
+-- 1. TABLAS MAESTRAS (SIN CLAVES FORÁNEAS)
+-- ========================================================
 
 CREATE TABLE `clientes` (
-  `id_cliente` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
   `telefono` varchar(20) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_cliente`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `clientes`
---
 
 INSERT INTO `clientes` (`id_cliente`, `nombre`, `telefono`, `email`, `fecha_registro`) VALUES
 (1, 'Elizabeth Preciado', '24587963', 'elizita@gmail.com', '2025-09-10 13:51:47'),
 (2, 'Anderson', '76321498', 'anderson@gmail.com', '2026-02-18 13:51:47'),
 (3, 'Hector Stiven Mendieta', '23557969', 'Hectorstiv@gmail.com', '2026-09-16 13:11:26');
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `compras_inventario`
---
-
-CREATE TABLE `compras_inventario` (
-  `id_compra` int(11) NOT NULL,
-  `id_proveedor` int(11) NOT NULL,
-  `id_empleado` int(11) NOT NULL,
-  `fecha_compra` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `total_compra` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `compras_inventario`
---
-
-INSERT INTO `compras_inventario` (`id_compra`, `id_proveedor`, `id_empleado`, `fecha_compra`, `total_compra`) VALUES
-(1, 1, 1, '2026-09-01 14:00:00', 150000.00);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `detalle_compras`
---
-
-CREATE TABLE `detalle_compras` (
-  `id_detalle_compra` int(11) NOT NULL,
-  `id_compra` int(11) NOT NULL,
-  `id_ingrediente` int(11) NOT NULL,
-  `cantidad_comprada` decimal(10,2) NOT NULL,
-  `preio_unitario` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `detalle_compras`
---
-
-INSERT INTO `detalle_compras` (`id_detalle_compra`, `id_compra`, `id_ingrediente`, `cantidad_comprada`, `preio_unitario`) VALUES
-(1, 1, 1, 5.00, 12000.00),
-(2, 1, 2, 5.00, 18000.00);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `detalle_pedidos`
---
-
-CREATE TABLE `detalle_pedidos` (
-  `id_detalle` int(11) NOT NULL,
-  `id_pedido` int(11) NOT NULL,
-  `id_producto` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  `precio_unitario` decimal(10,2) NOT NULL,
-  `notas_adicionales` varchar(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `detalle_pedidos`
---
-
-INSERT INTO `detalle_pedidos` (`id_detalle`, `id_pedido`, `id_producto`, `cantidad`, `precio_unitario`, `notas_adicionales`) VALUES
-(1, 1, 1, 1, 25000.00, 'Extra picante por favor'),
-(2, 1, 2, 1, 20000.00, 'Sin maní');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `empleados`
---
-
 CREATE TABLE `empleados` (
-  `id_empleado` int(11) NOT NULL,
+  `id_empleado` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
   `rol` varchar(50) NOT NULL,
-  `turno` varchar(50) NOT NULL
+  `turno` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_empleado`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `empleados`
---
 
 INSERT INTO `empleados` (`id_empleado`, `nombre`, `rol`, `turno`) VALUES
 (1, 'Carlos Ríos', 'Cajero', 'Mañana'),
 (2, 'Min-jun Kim', 'Chef', 'Tarde');
 
--- --------------------------------------------------------
+CREATE TABLE `proveedor` (
+  `id_proveedor` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre_empresa` varchar(100) NOT NULL,
+  `contacto` varchar(100) NOT NULL,
+  `telefono` varchar(20) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `direccion` varchar(200) NOT NULL,
+  PRIMARY KEY (`id_proveedor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Estructura de tabla para la tabla `employee_profiles`
---
+INSERT INTO `proveedor` (`id_proveedor`, `nombre_empresa`, `contacto`, `telefono`, `email`, `direccion`) VALUES
+(1, 'Importadora Asiática S.A.S.', 'Kim Min-ji', '3101234567', 'ventas@importasiatica.com', 'Calle 80 # 15-40, Bogotá'),
+(2, 'Avícola y Carnes del Norte', 'Pedro Pérez', '3209876543', 'pedidos@carnesdelnorte.com', 'Carrera 45 # 20-10, Bogotá');
+
+CREATE TABLE `productos` (
+  `id_producto` int(11) NOT NULL AUTO_INCREMENT,
+  `id_categoria` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `disponible` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id_producto`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `productos` (`id_producto`, `id_categoria`, `nombre`, `descripcion`, `precio`, `disponible`) VALUES
+(1, 1, 'Tteokbokki Tradicional', 'Pasteles de arroz picantes coreanos con pastel de pescado y cebollín', 25000.00, 1),
+(2, 2, 'Pollo frito coreano (Yangnyeom)', 'Crujientes trozos de pollo bañados en salsa agridulce y picante', 20000.00, 1);
+
+CREATE TABLE `users` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `email` varchar(191) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `role` enum('customer','kitchen','cashier','rider','admin') NOT NULL DEFAULT 'customer',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `users` (`id`, `email`, `password_hash`, `first_name`, `last_name`, `phone`, `role`, `is_active`, `created_at`, `updated_at`) VALUES
+('u-cajero-01', 'caja@mokpobites.com', 'hash_pass_456', 'Carlos', 'Ríos', NULL, 'cashier', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35'),
+('u-cliente-01', 'cliente@gmail.com', 'hash_pass_123', 'Laura', 'Gómez', NULL, 'customer', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35'),
+('u-cocina-01', 'chef@mokpobites.com', 'hash_pass_789', 'Min-jun', 'Kim', NULL, 'kitchen', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35');
+
+-- ========================================================
+-- 2. TABLAS DEPENDIENTES DE PRIMER NIVEL
+-- ========================================================
 
 CREATE TABLE `employee_profiles` (
   `user_id` varchar(36) NOT NULL,
   `shift` enum('morning','afternoon','night','rotative') NOT NULL DEFAULT 'rotative',
   `emergency_contact` varchar(100) DEFAULT NULL,
-  `hire_date` date NOT NULL
+  `hire_date` date NOT NULL,
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `fk_emp_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `employee_profiles`
---
 
 INSERT INTO `employee_profiles` (`user_id`, `shift`, `emergency_contact`, `hire_date`) VALUES
 ('u-cajero-01', 'morning', 'Maria Ríos - 3115551234', '2025-01-10'),
 ('u-cocina-01', 'afternoon', 'Ji-young Kim - 3125555678', '2025-03-15');
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `ingredientes`
---
-
 CREATE TABLE `ingredientes` (
-  `id_ingrediente` int(11) NOT NULL,
+  `id_ingrediente` int(11) NOT NULL AUTO_INCREMENT,
   `id_proveedor` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `unidad_medida` varchar(20) NOT NULL,
   `stock_actual` decimal(10,2) NOT NULL,
   `stock_minimo` decimal(10,2) NOT NULL,
-  `costo_unitario` decimal(10,2) NOT NULL
+  `costo_unitario` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id_ingrediente`),
+  KEY `fk_ingrediente_proveedor` (`id_proveedor`),
+  CONSTRAINT `fk_ingrediente_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `ingredientes`
---
 
 INSERT INTO `ingredientes` (`id_ingrediente`, `id_proveedor`, `nombre`, `unidad_medida`, `stock_actual`, `stock_minimo`, `costo_unitario`) VALUES
 (1, 1, 'Tteok (Pasteles de arroz)', 'kg', 25.00, 5.00, 12000.00),
 (2, 1, 'Salsa Gochujang', 'litros', 15.00, 3.00, 18000.00),
 (3, 2, 'Pechuga de Pollo', 'kg', 40.00, 10.00, 14000.00);
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `orders`
---
-
-CREATE TABLE `orders` (
-  `id` varchar(36) NOT NULL DEFAULT uuid(),
-  `order_number` int(11) NOT NULL,
-  `customer_id` varchar(36) DEFAULT NULL,
-  `created_by_id` varchar(36) DEFAULT NULL,
-  `rider_id` varchar(36) DEFAULT NULL,
-  `order_type` enum('dine_in','takeout','delivery') NOT NULL DEFAULT 'delivery',
-  `status` enum('pending','confirmed','kitchen_prep','ready','out_for_delivery','delivered','cancelled') NOT NULL DEFAULT 'pending',
-  `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+CREATE TABLE `compras_inventario` (
+  `id_compra` int(11) NOT NULL AUTO_INCREMENT,
+  `id_proveedor` int(11) NOT NULL,
+  `id_empleado` int(11) NOT NULL,
+  `fecha_compra` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `total_compra` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id_compra`),
+  KEY `fk_compra_proveedor` (`id_proveedor`),
+  KEY `fk_compra_empleado` (`id_empleado`),
+  CONSTRAINT `fk_compra_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_compra_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `orders`
---
+INSERT INTO `compras_inventario` (`id_compra`, `id_proveedor`, `id_empleado`, `fecha_compra`, `total_compra`) VALUES
+(1, 1, 1, '2026-09-01 14:00:00', 150000.00);
 
-INSERT INTO `orders` (`id`, `order_number`, `customer_id`, `created_by_id`, `rider_id`, `order_type`, `status`, `subtotal`, `total`, `created_at`, `updated_at`) VALUES
-('ord-001', 1, 'u-cliente-01', 'u-cliente-01', NULL, 'delivery', 'kitchen_prep', 45000.00, 45000.00, '2026-09-02 14:25:35', '2026-09-02 14:25:35');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `order_status_history`
---
-
-CREATE TABLE `order_status_history` (
-  `id` int(11) NOT NULL,
-  `order_id` varchar(36) NOT NULL,
-  `status` enum('pending','confirmed','kitchen_prep','ready','out_for_delivery','delivered','cancelled') NOT NULL,
-  `changed_by_id` varchar(36) DEFAULT NULL,
-  `notes` varchar(255) DEFAULT NULL,
-  `changed_at` timestamp NOT NULL DEFAULT current_timestamp()
+CREATE TABLE `detalle_compras` (
+  `id_detalle_compra` int(11) NOT NULL AUTO_INCREMENT,
+  `id_compra` int(11) NOT NULL,
+  `id_ingrediente` int(11) NOT NULL,
+  `cantidad_comprada` decimal(10,2) NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id_detalle_compra`),
+  KEY `fk_detalle_compra` (`id_compra`),
+  KEY `fk_detalle_ingrediente` (`id_ingrediente`),
+  CONSTRAINT `fk_detalle_compra` FOREIGN KEY (`id_compra`) REFERENCES `compras_inventario` (`id_compra`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_detalle_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `order_status_history`
---
+INSERT INTO `detalle_compras` (`id_detalle_compra`, `id_compra`, `id_ingrediente`, `cantidad_comprada`, `precio_unitario`) VALUES
+(1, 1, 1, 5.00, 12000.00),
+(2, 1, 2, 5.00, 18000.00);
 
-INSERT INTO `order_status_history` (`id`, `order_id`, `status`, `changed_by_id`, `notes`, `changed_at`) VALUES
-(1, 'ord-001', 'pending', 'u-cliente-01', 'Pedido recibido por la web', '2026-09-02 14:25:35'),
-(2, 'ord-001', 'kitchen_prep', 'u-cocina-01', 'Iniciando fritura de pollo y tteokbokki', '2026-09-02 14:25:35');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `payments`
---
-
-CREATE TABLE `payments` (
-  `id` varchar(36) NOT NULL DEFAULT uuid(),
-  `order_id` varchar(36) NOT NULL,
-  `received_by_id` varchar(36) DEFAULT NULL,
-  `payment_method` enum('cash','card','pse','nequi','daviplata') NOT NULL,
-  `status` enum('pending','approved','rejected','refunded') NOT NULL DEFAULT 'pending',
-  `transaction_ref` varchar(100) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+CREATE TABLE `recetas` (
+  `id_receta` int(11) NOT NULL AUTO_INCREMENT,
+  `id_producto` int(11) NOT NULL,
+  `id_ingrediente` int(11) NOT NULL,
+  `cantidad_requerida` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id_receta`),
+  KEY `fk_receta_producto` (`id_producto`),
+  KEY `fk_receta_ingrediente` (`id_ingrediente`),
+  CONSTRAINT `fk_receta_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_receta_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `payments`
---
+INSERT INTO `recetas` (`id_receta`, `id_producto`, `id_ingrediente`, `cantidad_requerida`) VALUES
+(1, 1, 1, 0.25),
+(2, 1, 2, 0.10),
+(3, 2, 3, 0.30);
 
-INSERT INTO `payments` (`id`, `order_id`, `received_by_id`, `payment_method`, `status`, `transaction_ref`, `amount`, `created_at`) VALUES
-('2958d3c9-a6da-11f1-8717-745d228f3536', 'ord-001', 'u-cajero-01', 'nequi', 'approved', 'M12345678', 45000.00, '2026-09-02 14:25:35');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pedidos`
---
+-- ========================================================
+-- 3. VENTAS, PEDIDOS Y DETALLES
+-- ========================================================
 
 CREATE TABLE `pedidos` (
-  `id_pedido` int(11) NOT NULL,
+  `id_pedido` int(11) NOT NULL AUTO_INCREMENT,
   `id_cliente` int(11) NOT NULL,
   `id_empleado` int(11) NOT NULL,
   `fecha_hora` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `metodo_pago` varchar(30) NOT NULL,
   `estado` varchar(30) NOT NULL,
-  `total` decimal(10,2) NOT NULL
+  `total` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id_pedido`),
+  KEY `fk_pedido_cliente` (`id_cliente`),
+  KEY `fk_pedido_empleado` (`id_empleado`),
+  CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pedido_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_empleado`, `fecha_hora`, `metodo_pago`, `estado`, `total`) VALUES
+(1, 1, 1, '2026-09-02 19:25:35', 'nequi', 'Completado', 45000.00);
+
+CREATE TABLE `detalle_pedidos` (
+  `id_detalle` int(11) NOT NULL AUTO_INCREMENT,
+  `id_pedido` int(11) NOT NULL,
+  `id_producto` int(11) NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `notas_adicionales` varchar(150) NOT NULL,
+  PRIMARY KEY (`id_detalle`),
+  KEY `fk_detalle_pedido_gen` (`id_pedido`),
+  KEY `fk_detalle_producto` (`id_producto`),
+  CONSTRAINT `fk_detalle_pedido_gen` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_detalle_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `detalle_pedidos` (`id_detalle`, `id_pedido`, `id_producto`, `cantidad`, `precio_unitario`, `notas_adicionales`) VALUES
+(1, 1, 1, 1, 25000.00, 'Extra picante por favor'),
+(2, 1, 2, 1, 20000.00, 'Sin maní');
+
 -- ========================================================
--- CREACIÓN DE LA TABLA `facturas`
+-- 4. FACTURAS Y DEVOLUCIONES
 -- ========================================================
 
 CREATE TABLE `facturas` (
@@ -285,13 +229,15 @@ CREATE TABLE `facturas` (
   PRIMARY KEY (`id_factura`),
   UNIQUE KEY `uk_numero_factura` (`numero_factura`),
   UNIQUE KEY `uk_factura_pedido` (`id_pedido`),
-  KEY `fk_factura_cliente` (`id_cliente`),
-  KEY `fk_factura_empleado` (`id_empleado`)
+  KEY `fk_factura_cliente_idx` (`id_cliente`),
+  KEY `fk_factura_empleado_idx` (`id_empleado`),
+  CONSTRAINT `fk_factura_pedido` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_factura_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_factura_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ========================================================
--- CREACIÓN DE LA TABLA `devoluciones`
--- ========================================================
+INSERT INTO `facturas` (`id_factura`, `numero_factura`, `id_pedido`, `id_cliente`, `id_empleado`, `fecha_emision`, `subtotal`, `impuestos`, `total`, `metodo_pago`, `estado_factura`) VALUES
+(1, 'FACT-2026-0001', 1, 1, 1, '2026-09-02 19:25:35', 37815.13, 7184.87, 45000.00, 'nequi', 'emitida');
 
 CREATE TABLE `devoluciones` (
   `id_devolucion` int(11) NOT NULL AUTO_INCREMENT,
@@ -306,401 +252,81 @@ CREATE TABLE `devoluciones` (
   PRIMARY KEY (`id_devolucion`),
   KEY `fk_devolucion_factura` (`id_factura`),
   KEY `fk_devolucion_detalle` (`id_detalle_pedido`),
-  KEY `fk_devolucion_empleado` (`id_empleado`)
+  KEY `fk_devolucion_empleado` (`id_empleado`),
+  CONSTRAINT `fk_devolucion_factura` FOREIGN KEY (`id_factura`) REFERENCES `facturas` (`id_factura`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_devolucion_detalle` FOREIGN KEY (`id_detalle_pedido`) REFERENCES `detalle_pedidos` (`id_detalle`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_devolucion_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- ========================================================
--- RESTRICCIONES DE CLAVE FORÁNEA (CONEXIONES)
--- ========================================================
-
--- Conexiones para `facturas`
-ALTER TABLE `facturas`
-  ADD CONSTRAINT `fk_factura_pedido` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_factura_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_factura_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- Conexiones para `devoluciones`
-ALTER TABLE `devoluciones`
-  ADD CONSTRAINT `fk_devolucion_factura` FOREIGN KEY (`id_factura`) REFERENCES `facturas` (`id_factura`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_devolucion_detalle` FOREIGN KEY (`id_detalle_pedido`) REFERENCES `detalle_pedidos` (`id_detalle`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_devolucion_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- ========================================================
--- VOLCADO DE DATOS (REGISTROS DE PRUEBA)
--- ========================================================
-
--- Registro de factura asociada al pedido #1 existente
-INSERT INTO `facturas` (`id_factura`, `numero_factura`, `id_pedido`, `id_cliente`, `id_empleado`, `fecha_emision`, `subtotal`, `impuestos`, `total`, `metodo_pago`, `estado_factura`) VALUES
-(1, 'FACT-2026-0001', 1, 1, 1, '2026-09-02 19:25:35', 37815.13, 7184.87, 45000.00, 'nequi', 'emitida');
-
--- Registro de devolución parcial (por ejemplo, el detalle #2 del pedido: Pollo frito)
 INSERT INTO `devoluciones` (`id_devolucion`, `id_factura`, `id_detalle_pedido`, `id_empleado`, `tipo_devolucion`, `cantidad_devuelta`, `monto_devuelto`, `motivo`, `fecha_devolucion`) VALUES
-(1, 1, 2, 1, 'parcial', 1, 20000.00, 'Cliente solicitó cancelación del plato por demora en entrega', '2026-09-02 19:40:10');
---
--- Volcado de datos para la tabla `pedidos`
---
+(1, 1, 2, 1, 'parcial', 1, 20000.00, 'Cancelación de plato por demora', '2026-09-02 19:40:10');
 
-INSERT INTO `pedidos` (`id_pedido`, `id_cliente`, `id_empleado`, `fecha_hora`, `metodo_pago`, `estado`, `total`) VALUES
-(1, 1, 1, '2026-09-02 19:25:35', 'nequi', 'Completado', 45000.00);
+-- ========================================================
+-- 5. ESQUEMA EXTENDIDO (ORDERS, STATUS HISTORY, PAYMENTS)
+-- ========================================================
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `productos`
---
-
-CREATE TABLE `productos` (
-  `id_producto` int(11) NOT NULL,
-  `id_categoria` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `descripcion` text NOT NULL,
-  `precio` decimal(10,2) NOT NULL,
-  `disponible` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `productos`
---
-
-INSERT INTO `productos` (`id_producto`, `id_categoria`, `nombre`, `descripcion`, `precio`, `disponible`) VALUES
-(1, 1, 'Tteokbokki Tradicional', 'Pasteles de arroz picantes coreanos con pastel de pescado y cebollín', 25000.00, 1),
-(2, 2, 'Pollo frito coreano (Yangnyeom)', 'Crujientes trozos de pollo bañados en salsa agridulce y picante', 20000.00, 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `proveedor`
---
-
-CREATE TABLE `proveedor` (
-  `id_proveedor` int(11) NOT NULL,
-  `nombre_empresa` varchar(100) NOT NULL,
-  `contacto` varchar(100) NOT NULL,
-  `telefono` varchar(20) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `direccion` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `proveedor`
---
-
-INSERT INTO `proveedor` (`id_proveedor`, `nombre_empresa`, `contacto`, `telefono`, `email`, `direccion`) VALUES
-(1, 'Importadora Asiática S.A.S.', 'Kim Min-ji', '3101234567', 'ventas@importasiatica.com', 'Calle 80 # 15-40, Bogotá'),
-(2, 'Avícola y Carnes del Norte', 'Pedro Pérez', '3209876543', 'pedidos@carnesdelnorte.com', 'Carrera 45 # 20-10, Bogotá');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `recetas`
---
-
-CREATE TABLE `recetas` (
-  `id_receta` int(11) NOT NULL,
-  `id_producto` int(11) NOT NULL,
-  `id_ingrediente` int(11) NOT NULL,
-  `cantidad_requerida` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `recetas`
---
-
-INSERT INTO `recetas` (`id_receta`, `id_producto`, `id_ingrediente`, `cantidad_requerida`) VALUES
-(1, 1, 1, 0.25),
-(2, 1, 2, 0.10),
-(3, 2, 3, 0.30);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `users`
---
-
-CREATE TABLE `users` (
-  `id` varchar(36) NOT NULL DEFAULT uuid(),
-  `email` varchar(191) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `role` enum('customer','kitchen','cashier','rider','admin') NOT NULL DEFAULT 'customer',
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+CREATE TABLE `orders` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `order_number` int(11) NOT NULL AUTO_INCREMENT,
+  `customer_id` varchar(36) DEFAULT NULL,
+  `created_by_id` varchar(36) DEFAULT NULL,
+  `rider_id` varchar(36) DEFAULT NULL,
+  `order_type` enum('dine_in','takeout','delivery') NOT NULL DEFAULT 'delivery',
+  `status` enum('pending','confirmed','kitchen_prep','ready','out_for_delivery','delivered','cancelled') NOT NULL DEFAULT 'pending',
+  `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `order_number` (`order_number`),
+  KEY `fk_orders_customer` (`customer_id`),
+  KEY `fk_orders_creator` (`created_by_id`),
+  KEY `fk_orders_rider` (`rider_id`),
+  CONSTRAINT `fk_orders_creator` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_orders_rider` FOREIGN KEY (`rider_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `users`
---
+INSERT INTO `orders` (`id`, `order_number`, `customer_id`, `created_by_id`, `rider_id`, `order_type`, `status`, `subtotal`, `total`, `created_at`, `updated_at`) VALUES
+('ord-001', 1, 'u-cliente-01', 'u-cliente-01', NULL, 'delivery', 'kitchen_prep', 45000.00, 45000.00, '2026-09-02 14:25:35', '2026-09-02 14:25:35');
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `first_name`, `last_name`, `phone`, `role`, `is_active`, `created_at`, `updated_at`) VALUES
-('u-cajero-01', 'caja@mokpobites.com', 'hash_pass_456', 'Carlos', 'Ríos', NULL, 'cashier', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35'),
-('u-cliente-01', 'cliente@gmail.com', 'hash_pass_123', 'Laura', 'Gómez', NULL, 'customer', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35'),
-('u-cocina-01', 'chef@mokpobites.com', 'hash_pass_789', 'Min-jun', 'Kim', NULL, 'kitchen', 1, '2026-09-02 14:25:35', '2026-09-02 14:25:35');
+CREATE TABLE `order_status_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` varchar(36) NOT NULL,
+  `status` enum('pending','confirmed','kitchen_prep','ready','out_for_delivery','delivered','cancelled') NOT NULL,
+  `changed_by_id` varchar(36) DEFAULT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `changed_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_history_order` (`order_id`),
+  KEY `fk_history_user` (`changed_by_id`),
+  CONSTRAINT `fk_history_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_history_user` FOREIGN KEY (`changed_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Índices para tablas volcadas
---
+INSERT INTO `order_status_history` (`id`, `order_id`, `status`, `changed_by_id`, `notes`, `changed_at`) VALUES
+(1, 'ord-001', 'pending', 'u-cliente-01', 'Pedido recibido por la web', '2026-09-02 14:25:35'),
+(2, 'ord-001', 'kitchen_prep', 'u-cocina-01', 'Iniciando fritura de pollo y tteokbokki', '2026-09-02 14:25:35');
 
---
--- Indices de la tabla `clientes`
---
-ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`id_cliente`);
+CREATE TABLE `payments` (
+  `id` varchar(36) NOT NULL DEFAULT (uuid()),
+  `order_id` varchar(36) NOT NULL,
+  `received_by_id` varchar(36) DEFAULT NULL,
+  `payment_method` enum('cash','card','pse','nequi','daviplata') NOT NULL,
+  `status` enum('pending','approved','rejected','refunded') NOT NULL DEFAULT 'pending',
+  `transaction_ref` varchar(100) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `fk_payments_order` (`order_id`),
+  KEY `fk_payments_cashier` (`received_by_id`),
+  CONSTRAINT `fk_payments_cashier` FOREIGN KEY (`received_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_payments_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indices de la tabla `compras_inventario`
---
-ALTER TABLE `compras_inventario`
-  ADD PRIMARY KEY (`id_compra`),
-  ADD KEY `fk_compra_proveedor` (`id_proveedor`),
-  ADD KEY `fk_compra_empleado` (`id_empleado`);
+INSERT INTO `payments` (`id`, `order_id`, `received_by_id`, `payment_method`, `status`, `transaction_ref`, `amount`, `created_at`) VALUES
+('2958d3c9-a6da-11f1-8717-745d228f3536', 'ord-001', 'u-cajero-01', 'nequi', 'approved', 'M12345678', 45000.00, '2026-09-02 14:25:35');
 
---
--- Indices de la tabla `detalle_compras`
---
-ALTER TABLE `detalle_compras`
-  ADD PRIMARY KEY (`id_detalle_compra`),
-  ADD KEY `fk_detalle_compra` (`id_compra`),
-  ADD KEY `fk_detalle_ingrediente` (`id_ingrediente`);
-
---
--- Indices de la tabla `detalle_pedidos`
---
-ALTER TABLE `detalle_pedidos`
-  ADD PRIMARY KEY (`id_detalle`),
-  ADD KEY `fk_detalle_pedido_gen` (`id_pedido`),
-  ADD KEY `fk_detalle_producto` (`id_producto`);
-
---
--- Indices de la tabla `empleados`
---
-ALTER TABLE `empleados`
-  ADD PRIMARY KEY (`id_empleado`);
-
---
--- Indices de la tabla `employee_profiles`
---
-ALTER TABLE `employee_profiles`
-  ADD PRIMARY KEY (`user_id`);
-
---
--- Indices de la tabla `ingredientes`
---
-ALTER TABLE `ingredientes`
-  ADD PRIMARY KEY (`id_ingrediente`),
-  ADD KEY `fk_ingrediente_proveedor` (`id_proveedor`);
-
---
--- Indices de la tabla `orders`
---
-ALTER TABLE `orders`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `order_number` (`order_number`),
-  ADD KEY `fk_orders_customer` (`customer_id`),
-  ADD KEY `fk_orders_creator` (`created_by_id`),
-  ADD KEY `fk_orders_rider` (`rider_id`);
-
---
--- Indices de la tabla `order_status_history`
---
-ALTER TABLE `order_status_history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_history_order` (`order_id`),
-  ADD KEY `fk_history_user` (`changed_by_id`);
-
---
--- Indices de la tabla `payments`
---
-ALTER TABLE `payments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_payments_order` (`order_id`),
-  ADD KEY `fk_payments_cashier` (`received_by_id`);
-
---
--- Indices de la tabla `pedidos`
---
-ALTER TABLE `pedidos`
-  ADD PRIMARY KEY (`id_pedido`),
-  ADD KEY `fk_pedido_cliente` (`id_cliente`),
-  ADD KEY `fk_pedido_empleado` (`id_empleado`);
-
---
--- Indices de la tabla `productos`
---
-ALTER TABLE `productos`
-  ADD PRIMARY KEY (`id_producto`);
-
---
--- Indices de la tabla `proveedor`
---
-ALTER TABLE `proveedor`
-  ADD PRIMARY KEY (`id_proveedor`);
-
---
--- Indices de la tabla `recetas`
---
-ALTER TABLE `recetas`
-  ADD PRIMARY KEY (`id_receta`),
-  ADD KEY `fk_receta_producto` (`id_producto`),
-  ADD KEY `fk_receta_ingrediente` (`id_ingrediente`);
-
---
--- Indices de la tabla `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `clientes`
---
-ALTER TABLE `clientes`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `compras_inventario`
---
-ALTER TABLE `compras_inventario`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `detalle_compras`
---
-ALTER TABLE `detalle_compras`
-  MODIFY `id_detalle_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `detalle_pedidos`
---
-ALTER TABLE `detalle_pedidos`
-  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `empleados`
---
-ALTER TABLE `empleados`
-  MODIFY `id_empleado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `ingredientes`
---
-ALTER TABLE `ingredientes`
-  MODIFY `id_ingrediente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `orders`
---
-ALTER TABLE `orders`
-  MODIFY `order_number` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `order_status_history`
---
-ALTER TABLE `order_status_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `pedidos`
---
-ALTER TABLE `pedidos`
-  MODIFY `id_pedido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `productos`
---
-ALTER TABLE `productos`
-  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `proveedor`
---
-ALTER TABLE `proveedor`
-  MODIFY `id_proveedor` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `recetas`
---
-ALTER TABLE `recetas`
-  MODIFY `id_receta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `compras_inventario`
---
-ALTER TABLE `compras_inventario`
-  ADD CONSTRAINT `fk_compra_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_compra_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `detalle_compras`
---
-ALTER TABLE `detalle_compras`
-  ADD CONSTRAINT `fk_detalle_compra` FOREIGN KEY (`id_compra`) REFERENCES `compras_inventario` (`id_compra`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_detalle_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `detalle_pedidos`
---
-ALTER TABLE `detalle_pedidos`
-  ADD CONSTRAINT `fk_detalle_pedido_gen` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_detalle_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `employee_profiles`
---
-ALTER TABLE `employee_profiles`
-  ADD CONSTRAINT `fk_emp_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `ingredientes`
---
-ALTER TABLE `ingredientes`
-  ADD CONSTRAINT `fk_ingrediente_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `orders`
---
-ALTER TABLE `orders`
-  ADD CONSTRAINT `fk_orders_creator` FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_orders_rider` FOREIGN KEY (`rider_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `order_status_history`
---
-ALTER TABLE `order_status_history`
-  ADD CONSTRAINT `fk_history_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_history_user` FOREIGN KEY (`changed_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `payments`
---
-ALTER TABLE `payments`
-  ADD CONSTRAINT `fk_payments_cashier` FOREIGN KEY (`received_by_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_payments_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
-
---
--- Filtros para la tabla `pedidos`
---
-ALTER TABLE `pedidos`
-  ADD CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_pedido_empleado` FOREIGN KEY (`id_empleado`) REFERENCES `empleados` (`id_empleado`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `recetas`
---
-ALTER TABLE `recetas`
-  ADD CONSTRAINT `fk_receta_ingrediente` FOREIGN KEY (`id_ingrediente`) REFERENCES `ingredientes` (`id_ingrediente`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_receta_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
