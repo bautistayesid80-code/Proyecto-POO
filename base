@@ -1,0 +1,122 @@
+-- ============================================================================
+-- INTEGRACIÓN: USUARIOS UNIFICADOS, ÓRDENES, AUDITORÍA Y PAGOS
+-- Motor: MySQL 8.0+ (InnoDB)
+-- ============================================================================
+
+USE mokpo_bites;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------------------------------------------------------
+-- 1. IDENTIDAD CENTRALIZADA (Clientes, Cocina, Cajeros, Riders, Admins)
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    email VARCHAR(191) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NULL,
+    role ENUM('customer', 'kitchen', 'cashier', 'rider', 'admin') NOT NULL DEFAULT 'customer',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Datos específicos solo si el usuario es empleado (extensión 1:1)
+DROP TABLE IF EXISTS employee_profiles;
+CREATE TABLE employee_profiles (
+    user_id VARCHAR(36) PRIMARY KEY,
+    shift ENUM('morning', 'afternoon', 'night', 'rotative') NOT NULL DEFAULT 'rotative',
+    emergency_contact VARCHAR(100) NULL,
+    hire_date DATE NOT NULL,
+    CONSTRAINT fk_emp_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- 2. ÓRDENES VINCULADAS AL CLIENTE Y AL PERSONAL
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS orders;
+CREATE TABLE orders (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    order_number INT AUTO_INCREMENT UNIQUE,
+    customer_id VARCHAR(36) NULL,   -- El usuario que compra (rol: 'customer')
+    created_by_id VARCHAR(36) NULL, -- Quién registró la orden (ej. cajero en salón, o el mismo cliente online)
+    rider_id VARCHAR(36) NULL,      -- Repartidor asignado (rol: 'rider')
+    order_type ENUM('dine_in', 'takeout', 'delivery') NOT NULL DEFAULT 'delivery',
+    status ENUM('pending', 'confirmed', 'kitchen_prep', 'ready', 'out_for_delivery', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+    subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Se usa SET NULL para no borrar ventas históricas si un usuario se da de baja
+    CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_orders_creator FOREIGN KEY (created_by_id) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_orders_rider FOREIGN KEY (rider_id) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- 3. AUDITORÍA DE ESTADOS (Trazabilidad exacta de quién hace qué)
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS order_status_history;
+CREATE TABLE order_status_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id VARCHAR(36) NOT NULL,
+    status ENUM('pending', 'confirmed', 'kitchen_prep', 'ready', 'out_for_delivery', 'delivered', 'cancelled') NOT NULL,
+    changed_by_id VARCHAR(36) NULL, -- Usuario que hizo la acción (ej. el cocinero que pasa a 'ready')
+    notes VARCHAR(255) NULL,
+    changed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_history_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
+    CONSTRAINT fk_history_user FOREIGN KEY (changed_by_id) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- 4. PAGOS REGISTRADOS
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS payments;
+CREATE TABLE payments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    order_id VARCHAR(36) NOT NULL,
+    received_by_id VARCHAR(36) NULL, -- Usuario que recibió/validó el pago (ej. cajero)
+    payment_method ENUM('cash', 'card', 'pse', 'nequi', 'daviplata') NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'refunded') NOT NULL DEFAULT 'pending',
+    transaction_ref VARCHAR(100) NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_payments_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_payments_cashier FOREIGN KEY (received_by_id) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================================
+-- EJEMPLO PRÁCTICO EN ACCIÓN (DML)
+-- ============================================================================
+
+-- 1. Insertar usuarios (1 cliente, 1 cajero, 1 cocinero)
+INSERT INTO users (id, email, password_hash, first_name, last_name, role) VALUES
+('u-cliente-01', 'cliente@gmail.com', 'hash_pass_123', 'Laura', 'Gómez', 'customer'),
+('u-cajero-01',  'caja@mokpobites.com', 'hash_pass_456', 'Carlos', 'Ríos', 'cashier'),
+('u-cocina-01',  'chef@mokpobites.com', 'hash_pass_789', 'Min-jun', 'Kim', 'kitchen');
+
+-- 2. El cliente hace un pedido
+INSERT INTO orders (id, customer_id, created_by_id, order_type, status, subtotal, total) VALUES
+('ord-001', 'u-cliente-01', 'u-cliente-01', 'delivery', 'pending', 45000.00, 45000.00);
+
+-- 3. Historial: La orden se crea pendiente
+INSERT INTO order_status_history (order_id, status, changed_by_id, notes) VALUES
+('ord-001', 'pending', 'u-cliente-01', 'Pedido recibido por la web');
+
+-- 4. El cocinero toma el pedido para preparar
+UPDATE orders SET status = 'kitchen_prep' WHERE id = 'ord-001';
+
+INSERT INTO order_status_history (order_id, status, changed_by_id, notes) VALUES
+('ord-001', 'kitchen_prep', 'u-cocina-01', 'Iniciando fritura de pollo y tteokbokki');
+
+-- 5. El cajero valida el pago recibido por Nequi
+INSERT INTO payments (order_id, received_by_id, payment_method, status, transaction_ref, amount) VALUES
+('ord-001', 'u-cajero-01', 'nequi', 'approved', 'M12345678', 45000.00);
